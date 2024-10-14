@@ -1,0 +1,28 @@
+% !TeX encoding = utf8
+% !TeX spellcheck = en_US
+
+\section{Introduction}
+
+Lub dub, lub dub, lub dub... Over the course of life, the heart perpetually beats and yet one does not perceive the thump. Nevertheless, the heart beat dictates the rhythm of life. Throughout history, ancient civilizations understood the heart's fundamental force in the preservation of life. Hence, doctors in antiquity had already started to palpate the pulse to extract the rate. \cite{hajar_pulse_2018}
+
+At the present time, palpation of the peripheral arteries still remains a customary clinical technique but several more advanced technologies have also emerged. These include electrocardiography, which measures the electrical activity of the myocardial pathway, magnetic induction tomography, which measures changes of tissue connectivity and impedance, ballistocardiography, which measures the vibrations of the body and phonocardiography, which measures the noise produced by the heart. \cite{ludwig_measurement_2018}
+
+Despite the respective abilities of the above instrumentation to accurately measure heart rate, they possess several disadvantages, particularly concerning their integration into wearable devices. For example, electrocardiography has a complicated procedure involving twelve electrodes positioned at specific locations, consequently requiring the expertise of a trained professional. Furthermore, magnetic inductance tomography and ballistocardiography are adversly affected by movements and muscular activity while phonocardiography is impaired by surrounding noise. \cite{ludwig_measurement_2018}
+
+In light of these shortcomings, photoplethysmography (PPG), a non-invasive optical technology, presents itself as an accessible, convenient and reliable gadget for continuous monitoring of vital signs in wearable devices \cite{kim_photoplethysmography_2023}. Photoplethysmography is capable of quantifying diverse health metrics such as blood oxygenation, arterial stiffness and blood pressure besides heart rate. Photoplethysmography operates by detecting fluctuations in light intensity absorbed and reflected by vascular tissues, allowing it to measure changes in blood volume. These variances are subsequently converted into a waveform, the photoplethysmogram, which forms the basis for downstream analytics. \cite{kyriacou_photoplethysmography_2022}
+
+While photoplethysmogram proves to be a valuable system, it is not devoid of challenges.
+In particular, the generated signal is highly susceptible to noise, leading to additive artifacts in the raw signal. Types of noise encountered include power-line interference, external light interference, baseline wandering caused by breathing, and probe-tissue interface disruption \cite{kyriacou_photoplethysmography_2022,elgendi_analysis_2012}. Fortunately, these disturbances are nothing but minor obstacles that can be overcome by well-designed digital filters. 
+
+Digital filtering is an essential measure to reduce the influence of noise. Digital filters refer to time-discrete linear time-invariant (LTI) systems for which there are two main types: Finite Impulse Response (FIR) and Infinite Impulse Response (IIR). As the name suggests, FIR filters only depend on a finite number of input signal, feed-forward samples. In contrast, IIR filters depend additionally on themselves, the feed-back samples, signifying that they can affect the output for an infinite period of time. The response of a filter is determined by its type (low-pass, high-pass, band-pass and band-stop), cutoff frequency and order. Compared to IIR filters, FIR filters have the advantage of stability, numerical robustness and preclusion of signal shape distortions but at the cost of higher orders, requiring increased computational effort and memory space. As a general remark, when filtering in real-time, a delay is always imposed on the signal. \cite{kyriacou_photoplethysmography_2022,noauthor_introduction_nodate}
+
+Given the merits of photoplethysmography as presented earlier and the availability of filters to extract the key features of photoplethysmograms, the aim of this study is to design and implement signal processing algorithms in order to calculate the heart rate in a real-time application using a commercially available PPG front-end and micro-controller development board.
+
+
+
+
+
+
+
+
+

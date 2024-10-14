@@ -1,0 +1,17 @@
+% !TeX encoding = utf8
+% !TeX spellcheck = en_US
+
+\section{Discussion}
+The evaluation of the algorithm, as presented in the results section, reveals both its strengths and limitations in peak detection tasks. While the algorithm performed closely to manual detection with a minor discrepancy of only 2 peaks, there are notable limitations that must be addressed.
+
+A significant limitation of the algorithm is its occasional failure to detect the true peak, instead identifying the dicrotic notch. The dicrotic notch is a secondary peak that occurs in the descending part of the pulse waveform, and mistaking this for the true peak can lead to inaccuracies in the analysis. This issue highlights a critical flaw in the algorithm's peak detection logic, which needs refinement to improve its accuracy in distinguishing between true peaks and other features of the waveform. 
+
+This limitation could be mitigated by implementing a counter that tracks the number of samples during which the derivative exceeds a predefined threshold. If the derivative remains below this threshold, the detected feature is likely the dicrotic notch rather than a true peak. Conversely, if the derivative surpasses the threshold for a sufficient number of samples, the feature can be reliably identified as a true peak.
+
+Furthermore, the implementation of the algorithm on a microcontroller revealed additional challenges. During this phase, the algorithm did not detect any peaks, indicating a bug in the microcontroller implementation. Due to time constraints, this bug could not be identified and resolved, preventing a thorough evaluation of the algorithm's performance on the microcontroller platform.
+
+To further investigate the failure of the algorithm's implementation on the microcontroller, the recorded data from the microcontroller was subsequently analyzed using MATLAB. This post-hoc assessment aimed to identify the source of the implementation failure. Upon re-evaluating the algorithm in MATLAB, it was confirmed that the algorithm could indeed detect peaks accurately in this environment. This finding suggests that the core logic of the algorithm is sound. The discrepancy between the algorithm's performance in MATLAB and its failure on the microcontroller could be attributed to differences in how thresholds for the derivative were set and processed in each environment. In MATLAB, the thresholds were optimized for floating-point arithmetic, which provides high precision. However, the microcontroller operates using fixed-point arithmetic, which can introduce quantization errors and reduced precision. These differences likely resulted in the thresholds being too tight on the microcontroller, causing it to miss the zero-crossing points during sampling.
+
+However, the exact reason for its malfunction on the microcontroller remains unresolved and requires additional investigation. The discrepancy between the MATLAB results and the microcontroller performance indicates that the issue likely lies in the implementation specifics or hardware limitations of the microcontroller platform, rather than in the algorithm itself.
+
+Overall, while the algorithm shows promise based on its initial performance, addressing these limitations is crucial. Improving its ability to accurately detect true peaks and ensuring reliable implementation on microcontrollers will enhance its utility in practical applications. Further research and development are needed to refine the algorithm and overcome these challenges.
