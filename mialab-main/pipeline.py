@@ -14,6 +14,7 @@ import sklearn.ensemble as sk_ensemble
 import numpy as np
 import pymia.data.conversion as conversion
 import pymia.evaluation.writer as writer
+from sklearn.model_selection import GridSearchCV
 
 try:
     import mialab.data.structure as structure
@@ -31,6 +32,36 @@ LOADING_KEYS = [structure.BrainImageTypes.T1w,
                 structure.BrainImageTypes.GroundTruth,
                 structure.BrainImageTypes.BrainMask,
                 structure.BrainImageTypes.RegistrationTransform]  # the list of data we will load
+
+
+def train_random_forest(images):
+    # Concatenate feature matrices and labels
+    data_train = np.concatenate([img.feature_matrix[0] for img in images])
+    labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
+
+    # Initialize the random forest with appropriate parameters
+    forest = sk_ensemble.RandomForestClassifier(max_features=data_train.shape[1], n_estimators=100, max_depth=5)
+
+    # Train the model
+    start_time = timeit.default_timer()
+    forest.fit(data_train, labels_train)
+    print('Training Time elapsed:', timeit.default_timer() - start_time, 's')
+
+    return forest
+
+def predict_with_random_forest(forest, images_test):
+    predictions = []
+    probabilities = []
+    
+    for img in images_test:
+        # Predict labels for each test image
+        preds = forest.predict(img.feature_matrix[0])
+        probs = forest.predict_proba(img.feature_matrix[0])
+        
+        predictions.append(preds)
+        probabilities.append(probs)
+    
+    return predictions, probabilities
 
 
 def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
@@ -72,14 +103,25 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    warnings.warn('Random forest parameters not properly set.')
-    forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                n_estimators=1,
-                                                max_depth=5)
+    # Set up parameters for grid search
+    param_grid = {
+        'n_estimators': [50, 80, 100, 150],         # Number of trees
+        'max_depth': [6, 8, 10, None],              # Maximum tree depth
+        'max_features': ['sqrt', 'log2', None],     # Number of features considered per split
+    }
 
+    # Initialize RandomForestClassifier with GridSearchCV
+    forest = sk_ensemble.RandomForestClassifier(random_state=42)
+    grid_search = GridSearchCV(forest, param_grid, cv=3, n_jobs=-1, scoring='f1_macro')
+
+    # Fit model with grid search
     start_time = timeit.default_timer()
-    forest.fit(data_train, labels_train)
-    print(' Time elapsed:', timeit.default_timer() - start_time, 's')
+    grid_search.fit(data_train, labels_train)
+    print('Grid Search Time elapsed:', timeit.default_timer() - start_time, 's')
+    print('Best parameters found:', grid_search.best_params_)
+
+    # Use the best estimator for further training and testing
+    best_forest = grid_search.best_estimator_
 
     # create a result directory with timestamp
     t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
