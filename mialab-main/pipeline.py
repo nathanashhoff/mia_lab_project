@@ -63,7 +63,6 @@ def predict_with_random_forest(forest, images_test):
     
     return predictions, probabilities
 
-
 def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
     """Brain tissue segmentation using decision forests.
 
@@ -150,8 +149,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         print('-' * 10, 'Testing', img.id_)
 
         start_time = timeit.default_timer()
-        predictions = forest.predict(img.feature_matrix[0])
-        probabilities = forest.predict_proba(img.feature_matrix[0])
+        predictions = best_forest.predict(img.feature_matrix[0])  # Use `best_forest` here
+        probabilities = best_forest.predict_proba(img.feature_matrix[0])  # Use `best_forest` here
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # convert prediction and probabilities back to SimpleITK images
