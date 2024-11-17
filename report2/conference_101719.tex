@@ -1,0 +1,73 @@
+% Magic comments for TeXStudio
+% !TeX program = pdflatex
+% !BIB program = biber
+% !TeX encoding = utf8
+% !TeX spellcheck = en_US
+
+\documentclass[conference]{IEEEtran}
+
+% It doesn't seem like we need this
+% BibLaTeX bibliography file
+%\bibliography{bibAntoine.bib} 
+%\bibliography{bibNathan.bib} 
+%\bibliography{bibSandro.bib}
+
+% I added
+\usepackage{epigraph}
+\usepackage{textgreek}
+
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Atlas-based Segmentation Consists of a Powerful Baseline for Brain Tissue Segmentation when Compared to a ML-based Approach\\
+\thanks{All authors declare that they have no conflicts of interest.}
+}
+
+\author{\IEEEauthorblockN{Antoine Biebuyck}
+\IEEEauthorblockA{\textit{ARTORG Center for BME Research} \\
+\textit{Université de Berne}\\
+Berne, Suisse \\
+antoine.biebuyck@students.unibe.ch}
+\and
+\IEEEauthorblockN{Nathan Hoffman}
+\IEEEauthorblockA{\textit{ARTORG Center for BME Research} \\
+\textit{Universität Bern}\\
+Bern, Schweiz \\
+nathan.hoffman@students.unibe.ch}
+\and
+\IEEEauthorblockN{Sandro Scherrer}
+\IEEEauthorblockA{\textit{ARTORG Center for BME Research} \\
+\textit{Università di Berna}\\
+Berna, Svizzera \\
+sandro.scherrer@students.unibe.ch}
+}
+
+\maketitle
+
+\begin{abstract}
+This document is a model and instructions for \LaTeX.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Alzheimer's disease, Magnetic resonance imaging, Image segmentation, Machine learning
+\end{IEEEkeywords}
+
+\input{chapters/introduction}
+\input{chapters/materials and methods}
+\input{chapters/results}
+\input{chapters/discussion}
+\input{chapters/conclusion}
+\input{chapters/acknowledgment}
+\input{chapters/references}
+
+\end{document}
