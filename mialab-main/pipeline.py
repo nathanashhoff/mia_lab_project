@@ -95,6 +95,9 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                           'intensity_feature': True,
                           'gradient_intensity_feature': True}
 
+    # Flag to turn on/off grid search
+    use_grid_search = False  # Set to False to skip grid search
+
     # load images for training and pre-process
     images = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
 
@@ -102,26 +105,41 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    # Set up parameters for grid search
-    param_grid = {
-        'n_estimators': [50, 80, 100, 150],         # Number of trees
-        'max_depth': [6, 8, 10, None],              # Maximum tree depth
-        'max_features': ['sqrt', 'log2', None],     # Number of features considered per split
-    }
+    if use_grid_search:
+        # Set up parameters for grid search
+        param_grid = {
+            'n_estimators': [400, 450, 500, 550, 600, 700],  # Number of trees
+            'max_depth': [15, 20, 25, 30, 35],               # Maximum tree depth
+            'max_features': ['sqrt', 'log2'],                # Number of features per split
+        }
 
-    # Initialize RandomForestClassifier with GridSearchCV
-    forest = sk_ensemble.RandomForestClassifier(random_state=42)
-    grid_search = GridSearchCV(forest, param_grid, cv=3, n_jobs=-1, scoring='f1_macro')
+        # Initialize RandomForestClassifier with GridSearchCV
+        forest = sk_ensemble.RandomForestClassifier(random_state=42)
+        grid_search = GridSearchCV(forest, param_grid, cv=3, n_jobs=-1, scoring='f1_macro')
 
-    # Fit model with grid search
-    start_time = timeit.default_timer()
-    grid_search.fit(data_train, labels_train)
-    print('Grid Search Time elapsed:', timeit.default_timer() - start_time, 's')
-    print('Best parameters found:', grid_search.best_params_)
+        # Fit model with grid search
+        start_time = timeit.default_timer()
+        grid_search.fit(data_train, labels_train)
+        print('Grid Search Time elapsed:', timeit.default_timer() - start_time, 's')
 
-    # Use the best estimator for further training and testing
-    best_forest = grid_search.best_estimator_
+        # Use the best estimator from grid search
+        forest = grid_search.best_estimator_
+        print('The best parameters are:', grid_search.best_params_)
 
+    else:
+        # Use only random forest with best current parameters if grid search is off
+        forest = sk_ensemble.RandomForestClassifier(
+            max_features=images[0].feature_matrix[0].shape[1],
+            n_estimators=500,
+            max_depth=20
+        )
+
+        # Fit the model without grid search
+        start_time = timeit.default_timer()
+        forest.fit(data_train, labels_train)
+        print('Training Time elapsed:', timeit.default_timer() - start_time, 's')
+
+    
     # create a result directory with timestamp
     t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     result_dir = os.path.join(result_dir, t)
@@ -149,8 +167,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         print('-' * 10, 'Testing', img.id_)
 
         start_time = timeit.default_timer()
-        predictions = best_forest.predict(img.feature_matrix[0])  # Use `best_forest` here
-        probabilities = best_forest.predict_proba(img.feature_matrix[0])  # Use `best_forest` here
+        predictions = forest.predict(img.feature_matrix[0])
+        probabilities = forest.predict_proba(img.feature_matrix[0])
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # convert prediction and probabilities back to SimpleITK images
