@@ -177,6 +177,50 @@ def compute_dice_score(seg1: sitk.Image, seg2: sitk.Image, label: int) -> float:
     dice_score = 2 * intersection / union if union > 0 else 0.0
     return dice_score
 
+import SimpleITK as sitk
+
+def apply_opening_closing(atlas: sitk.Image, labels: list, kernel_radius: int = 2):
+    """
+    Perform morphological opening and closing on each label in the atlas.
+    
+    Args:
+        atlas (sitk.Image): The atlas with labeled segmentations.
+        labels (list): List of unique label values in the atlas.
+        kernel_radius (int or list): Radius of the structuring element (default: 2).
+    
+    Returns:
+        sitk.Image: Atlas with morphological opening and closing applied to each label.
+    """
+    # Create a copy of the atlas to apply modifications
+    modified_atlas = sitk.Image(atlas.GetSize(), atlas.GetPixelID())
+    modified_atlas.CopyInformation(atlas)
+    
+    # Convert kernel_radius to a tuple if it's an integer
+    if isinstance(kernel_radius, int):
+        kernel_radius = [kernel_radius] * atlas.GetDimension()
+    
+    for label in labels:
+        if label == 0:
+            # Skip the background label
+            continue
+
+        # Isolate the current label
+        label_mask = sitk.BinaryThreshold(atlas, lowerThreshold=label, upperThreshold=label, insideValue=1, outsideValue=0)
+
+        # Perform morphological opening
+        opened_mask = sitk.BinaryMorphologicalOpening(label_mask, kernelRadius=kernel_radius)
+
+        # Perform morphological closing
+        closed_mask = sitk.BinaryMorphologicalClosing(opened_mask, kernelRadius=kernel_radius)
+
+        # Combine the processed label back into the atlas
+        label_region = sitk.BinaryThreshold(closed_mask, lowerThreshold=1, upperThreshold=1, insideValue=label, outsideValue=0)
+        modified_atlas = sitk.Add(modified_atlas, label_region)
+    
+    return modified_atlas
+
+
+
 
 def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
     """Brain tissue segmentation using decision forests.
@@ -240,6 +284,11 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     # load atlas images
     image_atlas = sitk.ReadImage("brain_segmentation_label_atlas.nii")
 
+    # List of unique labels in the atlas
+    labels = [1, 2, 3, 4, 5]  # Replace with actual labels in your atlas
+
+    modified_atlas = apply_opening_closing(image_atlas, labels, kernel_radius = 2)
+
     # initialize evaluator
     evaluator = putil.init_evaluator()
 
@@ -268,7 +317,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         resampler.SetReferenceImage(img.images[structure.BrainImageTypes.T1w])
         resampler.SetInterpolator(sitk.sitkNearestNeighbor)
         resampler.SetTransform(inverse_transform)
-        aligned_atlas = resampler.Execute(image_atlas)
+        aligned_atlas = resampler.Execute(modified_atlas)
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # evaluate segmentation without post-processing
@@ -276,14 +325,16 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
-    result_file = os.path.join(result_dir, 'results.csv')
+    folder_name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    os.makedirs(os.path.join(result_dir, folder_name), exist_ok=True)
+    result_file = os.path.join(result_dir, folder_name, 'results.csv')
     writer.CSVWriter(result_file).write(evaluator.results)
 
     print('\nSubject-wise results...')
     writer.ConsoleWriter().write(evaluator.results)
 
     # report also mean and standard deviation among all subjects
-    result_summary_file = os.path.join(result_dir, 'results_summary.csv')
+    result_summary_file = os.path.join(result_dir, folder_name, 'results_summary.csv')
     functions = {'MEAN': np.mean, 'STD': np.std}
     writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
     print('\nAggregated statistic results...')
@@ -303,7 +354,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--result_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, './mia-result')),
+        default=os.path.normpath(os.path.join(script_dir, './mia-atlas-result')),
         help='Directory for results.'
     )
 

@@ -197,14 +197,16 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
-    result_file = os.path.join(result_dir, 'results.csv')
+    folder_name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    os.makedirs(os.path.join(result_dir, folder_name), exist_ok=True)
+    result_file = os.path.join(result_dir, folder_name, 'results.csv')
     writer.CSVWriter(result_file).write(evaluator.results)
 
     print('\nSubject-wise results...')
     writer.ConsoleWriter().write(evaluator.results)
 
     # report also mean and standard deviation among all subjects
-    result_summary_file = os.path.join(result_dir, 'results_summary.csv')
+    result_summary_file = os.path.join(result_dir, folder_name, 'results_summary.csv')
     functions = {'MEAN': np.mean, 'STD': np.std}
     writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
     print('\nAggregated statistic results...')
