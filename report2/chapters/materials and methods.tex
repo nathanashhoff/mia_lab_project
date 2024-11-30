@@ -1,2 +1,53 @@
 \section{Materials and Methods}
 
+In medical image analysis, a typical workflow involves executing several sequential algorithmic steps, a process collectively referred to as a pipeline \cite{b8}. The pipeline in this study consists of six steps, namely pre-processing, registration, feature extraction, classification, post-processing and evaluation.
+
+\subsection{Pre-processing}
+
+As an initial step, pre-processing functions to refine and standardize all images in a dataset. Some common steps include background removal, noise reduction, intensity normalization and resampling \cite{b9}.
+
+\# TODO: describe what pre-processing we used and how it differed for each technique, also include that we additionally added noise on purpose as part of another experiment.
+% Ex: For the machine-learning approach, we proceeded with a skull stripping. 
+% Ex: As an additional experimental feature, we implemented a sort of reverse pre-processing and added salt & peppper noise to our images to evaluate our models on noisy data.
+
+\subsection{Registration}
+
+Registration is used to align multiple images to a common reference frame. When only rotations and translations are involved, it is referred to as a rigid transformation while, when scale and skew factors are also included, it is referred to as an affine transformation. Nonlinear, deformable transformations also exist \cite{b10}.
+
+\# TODO: describe what registration we used, for atlas-related I suggest we speak about it in other section
+% Ex: In this study, we aligned the T1- and T2-weighted images. 
+% Ex: Registration was also used while constructing the atlas but this is discussed in an ensuing section.
+
+\subsection{Feature Extraction}
+
+Any extractable characteristic or property that describes the underlying medical image and is used in the analysis is coined as a feature. Some examples of image features are intensity, shape and texture information \cite{b8}.
+
+\# TODO: describe what features we used and how it was extracted
+
+\subsection{Classification}
+
+Classification is the core of the automated segmentation process. It is during this step that the chosen machine learning algorithm decides which label to assign to a given voxel \cite{b8}. All previous steps of the pipeline are tuned such that the best label assignment result is obtained. In this study, a random forest machine learning algorithm was used.
+
+\# TODO: describe the parameters used in our implementation of the RF
+
+\subsection{Post-processing}
+
+With the predicted labels obtained, post-processing ensures that these segmentation results are cleaned, polished and improved. Some common examples are smoothing operations and morphological filters to remove noise, refine contours and fill in holes \cite{b11}.
+
+\# TODO: What did we do to ML results? What did we do to the atlas?
+
+\subsection{Evaluation}
+
+The final step of the pipeline is to quantitatively assess its performance. Such a numeric score is a quick and easy way to compare and contrast different pipelines. Note that qualitative assessment of the resulting segmentation results is also very important to consider when deciding the clinically "better" result.
+
+In this study, we decided to use the Dice coefficient, which measures the overlap between the predicted segmentation with the ground truth \cite{b12}.
+
+\subsection{Construction of Atlas Labels}
+
+All the ground truth labels from the train data were registered to the atlas image by using the same transformation that maps the raw images to the atlas. Then, using \#TODO: using what?, these labels were averaged to obtain the atlas labels.
+
+These atlas labels were then registered to the test images which then produces specific labels for each case.
+
+
+
+
