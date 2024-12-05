@@ -3,10 +3,7 @@
 In medical image analysis, a typical workflow involves executing several sequential algorithmic steps, a process collectively referred to as a pipeline \cite{b8}. The pipeline in this study consists of six steps, namely pre-processing, registration, feature extraction, classification, post-processing and evaluation.
 
 \subsection{Pre-processing}
-
-As an initial step, pre-processing functions to refine and standardize all images in a dataset. Some common steps include background removal, noise reduction, intensity normalization and resampling \cite{b9}.
-
-\# TODO: describe what pre-processing we used and how it differed for each technique, also include that we additionally added noise on purpose as part of another experiment.
+The pipeline begins with data crawling and preprocessing. A FileSystemDataCrawler organizes image directories, and \texttt{pre\_process\_batch} performs operations such as skull stripping, intensity normalization, and for the atlas affine registration is performed  \cite{b9}. Preprocessing parameters can be adjusted to include gradient intensity and coordinate-based feature extraction.
 % Ex: For the machine-learning approach, we proceeded with a skull stripping. 
 % Ex: As an additional experimental feature, we implemented a sort of reverse pre-processing and added salt & peppper noise to our images to evaluate our models on noisy data.
 
@@ -40,13 +37,12 @@ With the predicted labels obtained, post-processing ensures that these segmentat
 
 The final step of the pipeline is to quantitatively assess its performance. Such a numeric score is a quick and easy way to compare and contrast different pipelines. Note that qualitative assessment of the resulting segmentation results is also very important to consider when deciding the clinically "better" result.
 
-In this study, we decided to use the Dice coefficient, which measures the overlap between the predicted segmentation with the ground truth \cite{b12}.
+Dice scores quantify the segmentation quality for each tissue type (e.g., gray matter, white matter) \cite{b12}. Evaluator tools calculate subject-wise and aggregated statistics, including mean and standard deviation, across test samples. Results are logged and saved in timestamped directories for analysis.
 
 \subsection{Construction of Atlas Labels}
+A reference atlas serves as a common space for alignment. Training images are divided into subsets (e.g., 10 per atlas), which are registered to the reference atlas using affine transformations. Within each subset, atlases are constructed by assigning each voxel the label that occurs most frequently across all images in the subset. This majority-vote strategy ensures consistent labeling across atlases. Additionally, morphological operations, including median filtering and opening/closing, refine segmentation quality and eliminate small artifacts.
 
-All the ground truth labels from the train data were registered to the atlas image by using the same transformation that maps the raw images to the atlas. Then, using \#TODO: using what?, these labels were averaged to obtain the atlas labels.
-
-These atlas labels were then registered to the test images which then produces specific labels for each case.
+To account for variability across atlases, Dice scores calculated during validation are used to weight atlas contributions. A weighted atlas is then constructed by aggregating label-specific contributions of individual atlases based on their performance.
 
 
 
