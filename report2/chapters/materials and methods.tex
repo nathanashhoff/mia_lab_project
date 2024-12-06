@@ -12,6 +12,9 @@ Next, skull stripping was performed, which applied binary masks to remove non-br
 
 Additionally, we introduced experimental noise using salt-and-pepper transformations. This step was not part of standard pre-processing but was incorporated to test model robustness under challenging conditions.
 
+% Ex: For the machine-learning approach, we proceeded with a skull stripping. 
+% Ex: As an additional experimental feature, we implemented a sort of reverse pre-processing and added salt & peppper noise to our images to evaluate our models on noisy data.
+
 \subsection{Registration}
 
 Registration is used to align multiple images to a common reference frame. When only rotations and translations are involved, it is referred to as a rigid transformation while, when scale and skew factors are also included, it is referred to as an affine transformation. Nonlinear, deformable transformations also exist \cite{b10}.
@@ -48,13 +51,12 @@ With the predicted labels obtained, post-processing ensures that these segmentat
 
 The final step of the pipeline is to quantitatively assess its performance. Such a numeric score is a quick and easy way to compare and contrast different pipelines. Note that qualitative assessment of the resulting segmentation results is also very important to consider when deciding the clinically "better" result.
 
-In this study, we decided to use the Dice coefficient, which measures the overlap between the predicted segmentation with the ground truth \cite{b12}.
+Dice scores quantify the segmentation quality for each tissue type (e.g., gray matter, white matter) \cite{b12}. Evaluator tools calculate subject-wise and aggregated statistics, including mean and standard deviation, across test samples. Results are logged and saved in timestamped directories for analysis.
 
 \subsection{Construction of Atlas Labels}
+A reference atlas serves as a common space for alignment. Training images are divided into subsets (e.g., 10 per atlas), which are registered to the reference atlas using affine transformations. Within each subset, atlases are constructed by assigning each voxel the label that occurs most frequently across all images in the subset. This majority-vote strategy ensures consistent labeling across atlases. Additionally, morphological operations, including median filtering and opening/closing, refine segmentation quality and eliminate small artifacts.
 
-All the ground truth labels from the train data were registered to the atlas image by using the same transformation that maps the raw images to the atlas. Then, using \#TODO: using what?, these labels were averaged to obtain the atlas labels.
-
-These atlas labels were then registered to the test images which then produces specific labels for each case.
+To account for variability across atlases, Dice scores calculated during validation are used to weight atlas contributions. A weighted atlas is then constructed by aggregating label-specific contributions of individual atlases based on their performance.
 
 
 
