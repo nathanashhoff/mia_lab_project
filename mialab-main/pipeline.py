@@ -100,20 +100,24 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 ############################### Flags to turn on/off ######################################################
 
     use_grid_search = False  # Set to False to skip grid search
-    use_salt_and_pepper_noise = False  # Set to False to skip adding salt and pepper noise
+    use_salt_and_pepper_noise_train = False  # Set to False to skip adding salt and pepper noise
+    use_salt_and_pepper_noise_test = True  # Set to False to skip adding salt and pepper noise
 
 ###########################################################################################################
 
+    t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    result_dir = os.path.join(result_dir, t)
+    os.makedirs(result_dir, exist_ok=True)
 
 
     # load images for training and pre-process
     images = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
 
-    if use_salt_and_pepper_noise:
+    if use_salt_and_pepper_noise_train:
         for img in images:
             img.images[structure.BrainImageTypes.T1w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T1w], salt_prob=0.02, pepper_prob=0.02)
             img.images[structure.BrainImageTypes.T2w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T2w], salt_prob=0.02, pepper_prob=0.02)
-
+    
     # generate feature matrix and label vector
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
@@ -175,7 +179,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     pre_process_params['training'] = False
     images_test = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
 
-    if use_salt_and_pepper_noise:
+    if use_salt_and_pepper_noise_test:
         for img in images_test:
             img.images[structure.BrainImageTypes.T1w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T1w], salt_prob=0.02, pepper_prob=0.02)
             img.images[structure.BrainImageTypes.T2w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T2w], salt_prob=0.02, pepper_prob=0.02)
@@ -213,6 +217,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         # save results
         sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_SEG.mha'), True)
         sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + '_SEG-PP.mha'), True)
+        sitk.WriteImage(img.images[structure.BrainImageTypes.T1w], os.path.join(result_dir, images_test[i].id_ + '_t1.mha'), True)
+        sitk.WriteImage(img.images[structure.BrainImageTypes.T1w], os.path.join(result_dir, images_test[i].id_ + '_t2.mha'), True)
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
