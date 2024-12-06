@@ -95,11 +95,24 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                           'intensity_feature': True,
                           'gradient_intensity_feature': True}
 
-    # Flag to turn on/off grid search
+
+
+############################### Flags to turn on/off ######################################################
+
     use_grid_search = False  # Set to False to skip grid search
+    use_salt_and_pepper_noise = False  # Set to False to skip adding salt and pepper noise
+
+###########################################################################################################
+
+
 
     # load images for training and pre-process
-    images = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=True)
+    images = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
+
+    if use_salt_and_pepper_noise:
+        for img in images:
+            img.images[structure.BrainImageTypes.T1w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T1w], salt_prob=0.02, pepper_prob=0.02)
+            img.images[structure.BrainImageTypes.T2w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T2w], salt_prob=0.02, pepper_prob=0.02)
 
     # generate feature matrix and label vector
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
@@ -108,10 +121,12 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     if use_grid_search:
         # Set up parameters for grid search
         param_grid = {
-            'n_estimators': [400, 450, 500, 550, 600, 700],  # Number of trees
-            'max_depth': [15, 20, 25, 30, 35],               # Maximum tree depth
+            'n_estimators': [500, 600, 700, 800, 900, 1000],  # Number of trees
+            'max_depth': [35, 40, 45, 50],               # Maximum tree depth
             'max_features': ['sqrt', 'log2'],                # Number of features per split
         }
+
+        #Best parameters salt pepper: {'max_depth': 45, 'max_features': 'sqrt', 'n_estimators': 700}
 
         # Initialize RandomForestClassifier with GridSearchCV
         forest = sk_ensemble.RandomForestClassifier(random_state=42)
@@ -130,8 +145,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         # Use only random forest with best current parameters if grid search is off
         forest = sk_ensemble.RandomForestClassifier(
             max_features=images[0].feature_matrix[0].shape[1],
-            n_estimators=500,
-            max_depth=20
+            n_estimators=700,
+            max_depth=45
         )
 
         # Fit the model without grid search
@@ -160,6 +175,10 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     pre_process_params['training'] = False
     images_test = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
 
+    if use_salt_and_pepper_noise:
+        for img in images_test:
+            img.images[structure.BrainImageTypes.T1w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T1w], salt_prob=0.02, pepper_prob=0.02)
+            img.images[structure.BrainImageTypes.T2w] = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T2w], salt_prob=0.02, pepper_prob=0.02)
     images_prediction = []
     images_probabilities = []
 

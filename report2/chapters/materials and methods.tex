@@ -6,9 +6,11 @@ In medical image analysis, a typical workflow involves executing several sequent
 
 As an initial step, pre-processing functions to refine and standardize all images in a dataset. Some common steps include background removal, noise reduction, intensity normalization and resampling \cite{b9}.
 
-\# TODO: describe what pre-processing we used and how it differed for each technique, also include that we additionally added noise on purpose as part of another experiment.
-% Ex: For the machine-learning approach, we proceeded with a skull stripping. 
-% Ex: As an additional experimental feature, we implemented a sort of reverse pre-processing and added salt & peppper noise to our images to evaluate our models on noisy data.
+Pre-processing ensures the refinement and standardization of all images for subsequent analysis. In our implementation, the pipeline began with intensity normalization, executed via Z-Score normalization. This method computed the mean and standard deviation of pixel intensities, standardizing them to a zero-mean, unit-variance distribution. This step mitigated inconsistencies across datasets.
+
+Next, skull stripping was performed, which applied binary masks to remove non-brain regions. This ensured only relevant anatomical structures were retained.
+
+Additionally, we introduced experimental noise using salt-and-pepper transformations. This step was not part of standard pre-processing but was incorporated to test model robustness under challenging conditions.
 
 \subsection{Registration}
 
@@ -20,21 +22,27 @@ Registration is used to align multiple images to a common reference frame. When 
 
 \subsection{Feature Extraction}
 
-Any extractable characteristic or property that describes the underlying medical image and is used in the analysis is coined as a feature. Some examples of image features are intensity, shape and texture information \cite{b8}.
+Any extractable characteristic or property that describes the underlying medical image and is used in the analysis is coined as a feature. Some examples of image features are intensity, shape, and texture information \cite{b8}. In this study, we focused on extracting features that capture spatial, textural, and statistical properties of the images.
 
-\# TODO: describe what features we used and how it was extracted
+Textural features, derived from local intensity distributions, were used to capture patterns and variations within tissue regions. These included metrics such as mean intensity, variance, skewness, and entropy, which are particularly valuable for distinguishing between homogeneous and heterogeneous structures. These features enable the identification of subtle differences in tissue composition. Statistical sampling of voxel intensities provided additional insights by focusing on representative subsets of the data. By generating masks to ensure balanced sampling across different labels, we accounted for variations in tissue representation and minimized the impact of class imbalance. This approach not only improved the quality of the feature set but also enhanced the training process for machine learning models.
+
+The combination of these features ensured a robust and multidimensional characterization of the images, facilitating effective downstream processing and analysis.
 
 \subsection{Classification}
 
-Classification is the core of the automated segmentation process. It is during this step that the chosen machine learning algorithm decides which label to assign to a given voxel \cite{b8}. All previous steps of the pipeline are tuned such that the best label assignment result is obtained. In this study, a random forest machine learning algorithm was used.
+Classification is the core of the automated segmentation process, where the chosen machine learning algorithm determines the label for each voxel in the image \cite{b8}. In this study, a Random Forest classifier was utilized due to its robustness in handling high-dimensional data and its resistance to overfitting.
 
-\# TODO: describe the parameters used in our implementation of the RF
+To optimize the classifier’s performance, a grid search was conducted to determine the best hyperparameters for both standard and noisy datasets (with added salt-and-pepper noise). Interestingly, the same optimal hyperparameters were identified for both conditions, indicating the classifier’s adaptability to different data qualities. The model achieved the best results with 700 decision trees (\texttt{n\_estimators}), a maximum tree depth of 45 (\texttt{max\_depth}), and a square root selection of features at each split (\texttt{max\_features = sqrt}).
+
+The Random Forest was trained on features extracted from the pre-processed images, and its predictions on test data provided voxel-level probabilities for each label. These outputs formed the basis for subsequent post-processing and evaluation steps, ensuring accurate and reliable segmentation results across varying data conditions.
+
 
 \subsection{Post-processing}
 
 With the predicted labels obtained, post-processing ensures that these segmentation results are cleaned, polished and improved. Some common examples are smoothing operations and morphological filters to remove noise, refine contours and fill in holes \cite{b11}.
 
 \# TODO: What did we do to ML results? What did we do to the atlas?
+%Should we maybe just remove this subsection because we dont use any postprocessing?
 
 \subsection{Evaluation}
 

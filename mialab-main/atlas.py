@@ -334,29 +334,6 @@ def register_atlas(
     return final_transform
 
 
-def add_salt_and_pepper_noise(image: sitk.Image, salt_prob: float = 0.02, pepper_prob: float = 0.02):
-    # Convert SimpleITK image to numpy array
-    np_image = sitk.GetArrayFromImage(image)
-    
-    # Get image dimensions
-    height, width, depth = np_image.shape
-    
-    # Add salt (white) noise
-    num_salt = int(np.prod(np_image.shape) * salt_prob)
-    salt_coords = [np.random.randint(0, i, num_salt) for i in np_image.shape]
-    np_image[salt_coords[0], salt_coords[1], salt_coords[2]] = np.max(np_image)  # set to max intensity (white)
-    
-    # Add pepper (black) noise
-    num_pepper = int(np.prod(np_image.shape) * pepper_prob)
-    pepper_coords = [np.random.randint(0, i, num_pepper) for i in np_image.shape]
-    np_image[pepper_coords[0], pepper_coords[1], pepper_coords[2]] = 0  # set to min intensity (black)
-    
-    # Convert numpy array back to SimpleITK image
-    noisy_image = sitk.GetImageFromArray(np_image)
-    noisy_image.CopyInformation(image)  # retain the original image's metadata
-    
-    return noisy_image
-
 def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
     """Brain tissue segmentation using decision forests.
 
@@ -504,7 +481,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         start_time = timeit.default_timer()
         print('-' * 10, 'Testing', img.id_)
         print("Performing registration...")
-        noisy_image = add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T1w], salt_prob = 0.02, pepper_prob = 0.02)
+        noisy_image = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T1w], salt_prob = 0.02, pepper_prob = 0.02)
         # Save the noisy image
         # sitk.WriteImage(noisy_image, f'noisy_{img.id_}.nii')
         transform = register_atlas(image_atlas, noisy_image, "affine")

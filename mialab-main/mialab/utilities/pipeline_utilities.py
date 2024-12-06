@@ -297,7 +297,7 @@ def init_evaluator() -> eval_.Evaluator:
     # initialize metrics
     metrics = [metric.DiceCoefficient()]
     # todo: add hausdorff distance, 95th percentile (see metric.HausdorffDistance)
-    warnings.warn('Initialized evaluation with the Dice coefficient. Do you know other suitable metrics?')
+    #warnings.warn('Initialized evaluation with the Dice coefficient. Do you know other suitable metrics?')
 
     # define the labels to evaluate
     labels = {1: 'WhiteMatter',
@@ -365,3 +365,23 @@ def post_process_batch(brain_images: t.List[structure.BrainImage], segmentations
     else:
         pp_images = [post_process(img, seg, prob, **post_process_params) for img, seg, prob in param_list]
     return pp_images
+
+def add_salt_and_pepper_noise(image: sitk.Image, salt_prob: float = 0.02, pepper_prob: float = 0.02):
+    # Convert SimpleITK image to numpy array
+    np_image = sitk.GetArrayFromImage(image)
+    
+    # Add salt (white) noise
+    num_salt = int(np.prod(np_image.shape) * salt_prob)
+    salt_coords = [np.random.randint(0, i, num_salt) for i in np_image.shape]
+    np_image[salt_coords[0], salt_coords[1], salt_coords[2]] = np.max(np_image)  # set to max intensity (white)
+    
+    # Add pepper (black) noise
+    num_pepper = int(np.prod(np_image.shape) * pepper_prob)
+    pepper_coords = [np.random.randint(0, i, num_pepper) for i in np_image.shape]
+    np_image[pepper_coords[0], pepper_coords[1], pepper_coords[2]] = 0  # set to min intensity (black)
+    
+    # Convert numpy array back to SimpleITK image
+    noisy_image = sitk.GetImageFromArray(np_image)
+    noisy_image.CopyInformation(image)  # retain the original image's metadata
+    
+    return noisy_image
