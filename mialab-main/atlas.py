@@ -9,6 +9,7 @@ import sys
 import timeit
 import warnings
 
+import pickle
 import SimpleITK as sitk
 import sklearn.ensemble as sk_ensemble
 import numpy as np
@@ -273,10 +274,9 @@ def register_atlas(
     registration_method = sitk.ImageRegistrationMethod()
     if registration == "affine":
         # Similarity metric
-        registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=75)
-
+        registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=100)
         # Optimizer
-        registration_method.SetOptimizerAsGradientDescent(learningRate=0.25, numberOfIterations=300)
+        registration_method.SetOptimizerAsGradientDescent(learningRate=0.1, numberOfIterations=300)
         registration_method.SetOptimizerScalesFromPhysicalShift()
 
         # Interpolation
@@ -350,8 +350,10 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     BASE_DIR = os.path.dirname(os.path.abspath(os.getcwd()))
     ATLAS_PATH = "mia_lab_project/data/atlas/mni_icbm152_t1_tal_nlin_sym_09a.nii.gz"
+    PROJECT_PATH = "mia_lab_project/mialab-main/atlas_images"
     path_to_atlas = os.path.join(BASE_DIR, ATLAS_PATH)
-    create_atlas = True
+    create_atlas = False
+    num_of_atlases = 2
     if create_atlas:
 
         # initialize evaluator
@@ -371,7 +373,6 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
         # load images for testing and pre-process
         images_train = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=True)
-        print(len(images_train[:6]))
         # Example usage: list all unique values in each segmentation
         all_unique_labels = set()
         # if not sitk.ReadImage("brain_segmentation_label_atlas.nii"):
@@ -391,22 +392,23 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
         # Load the reference atlas image
         reference_image = sitk.ReadImage(path_to_atlas)
-        num_of_atlases = 2
-
+        # Results list from evaluator -> used for creating weighted atlas
+        results = []
         for i in range(num_of_atlases):
             # Create the single-label atlas compatible with ITK-Snap
-            label_atlas = create_multilabel_atlas(images_train[i*10:i*10+10], reference_image, label_transform, num_labels=len(to_combine))
+            label_atlas = create_multilabel_atlas(images_train[i*(20//num_of_atlases):i*(20//num_of_atlases)+(20//num_of_atlases)], reference_image, label_transform, num_labels=len(to_combine))
+
             # Save the single-label atlas
-            sitk.WriteImage(label_atlas, f"brain_segmentation_label_atlas_{i}.nii")
+            sitk.WriteImage(label_atlas, os.path.join(BASE_DIR, PROJECT_PATH, "atlas", f"brain_segmentation_label_atlas_{i}.nii"))
 
             # List of unique labels in the atlas
             labels = [1, 2, 3, 4, 5]  # Replace with actual labels in your atlas
 
             modified_atlas = apply_opening_closing(label_atlas, labels, kernel_radius = 1)
             # Save the single-label atlas
-            sitk.WriteImage(modified_atlas, f"modified_brain_segmentation_label_atlas_{i}.nii")
+            sitk.WriteImage(modified_atlas, os.path.join(BASE_DIR, PROJECT_PATH, "modified_atlas", f"modified_brain_segmentation_label_atlas_{i}.nii"))
 
-            subimages = images_train[:i * 10] + images_train[i * 10 + 10:]
+            subimages = images_train[:i * (20//num_of_atlases)] + images_train[i * (20//num_of_atlases) + (20//num_of_atlases):]
 
             for img in subimages:
                 start_time = timeit.default_timer()
@@ -439,25 +441,35 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
             functions = {'MEAN': np.mean, 'STD': np.std}
             writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
             print('\nAggregated statistic results...')
-            writer.ConsoleStatisticsWriter(functions=functions).write(evaluator.results)
-
+            writer.ConsoleStatisticsWriter(functions=functions)
+            result = writer.StatisticsAggregator(functions=functions).calculate(evaluator.results)
             # clear results such that the evaluator is ready for the next evaluation
+            results.append(result)
             evaluator.clear()
+
+        dice_scores_per_label = {
+        1: [result[2].value for result in results],  # Grey matter
+        2: [result[8].value for result in results],  # White matter
+        3: [result[4].value for result in results],  # Hippocampus
+        4: [result[0].value for result in results],  # Amygdala
+        5: [result[6].value for result in results]   # Thalamus
+        }
+
+        with open(os.path.join(BASE_DIR, PROJECT_PATH, 'saved_dice_scores_per_label.pkl'), 'wb') as f:
+            pickle.dump(dice_scores_per_label, f)
+
 
     # load atlas images
     image_atlas = sitk.ReadImage(path_to_atlas)
-    atlases = [sitk.ReadImage(f"modified_brain_segmentation_label_atlas_{i}.nii") for i in range(2)]  # Replace with actual paths
-    dice_scores_per_label = {
-    1: [0.5412968897962344, 0.5281777722628307],  # Grey matter
-    2: [0.6856166796474245, 0.6832632058213017],  # White matter
-    3: [0.6564597739817636, 0.6751220690580928],  # Hippocampus
-    4: [0.6965166575751952, 0.8147284129367269],  # Amygdala
-    5: [0.8235543067879816, 0.816336186]   # Thalamus
-    }
+    atlases = [sitk.ReadImage(os.path.join(BASE_DIR, PROJECT_PATH, "modified_atlas", f"modified_brain_segmentation_label_atlas_{i}.nii")) for i in range(num_of_atlases)]  # Replace with actual paths
+    dice_scores_path = os.path.join(BASE_DIR, PROJECT_PATH, 'saved_dice_scores_per_label.pkl')
+    with open(dice_scores_path, 'rb') as f:
+        dice_scores_per_label = pickle.load(f)
+
     num_labels = 5
     weighted_atlas = compute_weighted_atlas_label_specific(atlases, dice_scores_per_label, num_labels)
     # Save the single-label atlas
-    sitk.WriteImage(weighted_atlas, f"weighted_atlas.nii")
+    sitk.WriteImage(weighted_atlas, os.path.join(BASE_DIR, PROJECT_PATH, "weighted_atlas", f"weighted_atlas.nii"))
 
     # initialize evaluator
     evaluator = putil.init_evaluator()
@@ -482,15 +494,18 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         print('-' * 10, 'Testing', img.id_)
         print("Performing registration...")
         noisy_image = putil.add_salt_and_pepper_noise(img.images[structure.BrainImageTypes.T1w], salt_prob = 0.02, pepper_prob = 0.02)
+        # Save the ground truths
+        sitk.WriteImage(img.images[structure.BrainImageTypes.T1w], os.path.join(BASE_DIR, PROJECT_PATH, "ground_truths", f'ground_truth_{img.id_}.nii'))
         # Save the noisy image
-        # sitk.WriteImage(noisy_image, f'noisy_{img.id_}.nii')
+        sitk.WriteImage(noisy_image, os.path.join(BASE_DIR, PROJECT_PATH, "noisy_images", f'noisy_{img.id_}.nii'))
         transform = register_atlas(image_atlas, noisy_image, "affine")
         resampler = sitk.ResampleImageFilter()
         resampler.SetReferenceImage(img.images[structure.BrainImageTypes.T1w])
         resampler.SetInterpolator(sitk.sitkNearestNeighbor)
         resampler.SetTransform(transform)
         aligned_atlas = resampler.Execute(weighted_atlas)
-
+        # Save the aligned atlas
+        sitk.WriteImage(aligned_atlas, os.path.join(BASE_DIR, PROJECT_PATH, "atlas_aligned", f'aligned_atlas_{img.id_}.nii'))
         
         print("Registration finished.")
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
