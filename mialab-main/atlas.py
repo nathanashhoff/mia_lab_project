@@ -353,7 +353,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     PROJECT_PATH = "mia_lab_project/mialab-main/atlas_images"
     path_to_atlas = os.path.join(BASE_DIR, ATLAS_PATH)
     create_atlas = False
-    num_of_atlases = 2
+    num_of_atlases = 1
     if create_atlas:
 
         # initialize evaluator
@@ -407,9 +407,11 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
             modified_atlas = apply_opening_closing(label_atlas, labels, kernel_radius = 1)
             # Save the single-label atlas
             sitk.WriteImage(modified_atlas, os.path.join(BASE_DIR, PROJECT_PATH, "modified_atlas", f"modified_brain_segmentation_label_atlas_{i}.nii"))
-
-            subimages = images_train[:i * (20//num_of_atlases)] + images_train[i * (20//num_of_atlases) + (20//num_of_atlases):]
-
+            if num_of_atlases != 1:
+                subimages = images_train[:i * (20//num_of_atlases)] + images_train[i * (20//num_of_atlases) + (20//num_of_atlases):]
+            else:
+                subimages = images_train
+            
             for img in subimages:
                 start_time = timeit.default_timer()
                 print('-' * 10, 'Validation', img.id_)
@@ -427,21 +429,14 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                 evaluator.evaluate(aligned_atlas, img.images[structure.BrainImageTypes.GroundTruth], img.id_)
 
             # use two writers to report the results
-            os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
-            folder_name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            os.makedirs(os.path.join(result_dir, folder_name), exist_ok=True)
-            result_file = os.path.join(result_dir, folder_name, 'results.csv')
-            writer.CSVWriter(result_file).write(evaluator.results)
-
             print('\nSubject-wise results...')
             writer.ConsoleWriter().write(evaluator.results)
 
             # report also mean and standard deviation among all subjects
-            result_summary_file = os.path.join(result_dir, folder_name, 'results_summary.csv')
             functions = {'MEAN': np.mean, 'STD': np.std}
-            writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
+            # writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
             print('\nAggregated statistic results...')
-            writer.ConsoleStatisticsWriter(functions=functions)
+            writer.ConsoleStatisticsWriter(functions=functions).write(evaluator.results)
             result = writer.StatisticsAggregator(functions=functions).calculate(evaluator.results)
             # clear results such that the evaluator is ready for the next evaluation
             results.append(result)

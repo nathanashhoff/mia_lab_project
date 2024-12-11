@@ -1,3 +1,27 @@
 \section{Results}
 
+\setlength{\tabcolsep}{3pt}
+\begin{table}[ht]
+	\begin{flushleft}
+		\caption{Comparison of segmentation performance between Random Forest and Atlas-based methods.}
+		\begin{tabularx}{\linewidth}{Xccccccc}
+			\toprule
+			\multirow{2}{*}{Region} & \multicolumn{2}{c}{Random Forest} & \multicolumn{2}{c}{Atlas} \\ 
+			\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+			\midrule
+			Noise & No & Yes & No & Yes \\
+			Amygdala & $0.47 \pm 0.06$ & $0.47 \pm 0.06$ & $\mathbf{0.63 \pm 0.08}$ & $0.61 \pm 0.07$ \\
+			Hippocampus & $0.43 \pm 0.05$ & $0.43 \pm 0.05$ & $0.61 \pm 0.10$ & $\mathbf{0.63 \pm 0.06}$ \\
+			Thalamus & $0.68 \pm 0.10$ & $0.68 \pm 0.10$ & $\mathbf{0.79\pm 0.04}$ & $0.78 \pm 0.05$ \\
+			Grey Matter & $0.73 \pm 0.01$ & $\mathbf{0.74 \pm 0.01}$ & $0.53 \pm 0.02 $ & $0.52 \pm 0.03$ \\
+			White Matter & $\mathbf{0.83 \pm 0.02}$ & $\mathbf{0.83 \pm 0.02}$ & $0.66 \pm 0.03$ & $0.66 \pm 0.03$ \\
+			Time (s)  & $197.3 \pm 6.3$  & $209.0 \pm 7.5$  & $6.0 \pm 1.8$  & $\mathbf{5.8 \pm 0.7}$ \\
+			\bottomrule
+		\end{tabularx}
+	\end{flushleft}	
+	\label{tab:performance_comparison}
+\end{table}
 
+The comparison of segmentation performance between the Random Forest-based and Atlas-based methods, both with and without noise, revealed distinct trends across brain regions. These differences can be seen in Tab. \ref{tab:performance_comparison}. For the amygdala, the Atlas-based method without noise achieved the highest Dice score (0.63 ± 0.08) compared to the Random Forest method (0.47 ± 0.06). With noise, the Atlas-based method scored slightly lower (0.61 ± 0.07) but still outperformed the Random Forest method (0.47 ± 0.06). Similarly, for the hippocampus, the Atlas-based method performed better in noisy conditions, achieving the highest Dice score (0.63 ± 0.06) compared to the performance without noise (0.61 ± 0.10), while the Random Forest method showed no variability, scoring consistently (0.43 ± 0.05).
+In the thalamus, the Atlas-based method achieved the best performance without noise (0.79 ± 0.04), slightly decreasing in the presence of noise (0.78 ± 0.05), whereas the Random Forest method showed consistent performance (0.68 ± 0.10) across conditions. Contrastingly, for grey matter, the Random Forest method performed better with noise (0.74 ± 0.01) than without noise (0.73 ± 0.01), while the Atlas-based method performed significantly worse, scoring 0.53 ± 0.02 without noise and 0.52 ± 0.03 with noise. For white matter, the Random Forest method outperformed the Atlas-based method with a consistent Dice score of 0.83 ± 0.02 across noise conditions, whereas the Atlas-based method achieved 0.66 ± 0.03 in both cases.
+Regarding computational time, the Atlas-based method was significantly faster, taking 6.0 ± 1.8 seconds without noise and 5.8 ± 0.7 seconds with noise. In contrast, the Random Forest method required substantially more time, taking 197.3 ± 6.3 seconds without noise and 209.0 ± 7.5 seconds with noise. These results demonstrate clear differences in segmentation performance and computational efficiency between the two methods.

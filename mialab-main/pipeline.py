@@ -101,7 +101,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     use_grid_search = False  # Set to False to skip grid search
     use_salt_and_pepper_noise_train = False  # Set to False to skip adding salt and pepper noise
-    use_salt_and_pepper_noise_test = True  # Set to False to skip adding salt and pepper noise
+    use_salt_and_pepper_noise_test = False  # Set to False to skip adding salt and pepper noise
 
 ###########################################################################################################
 
@@ -111,7 +111,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
 
     # load images for training and pre-process
-    images = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
+    images = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=True)
 
     if use_salt_and_pepper_noise_train:
         for img in images:
@@ -177,7 +177,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # load images for testing and pre-process
     pre_process_params['training'] = False
-    images_test = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
+    images_test = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=True)
 
     if use_salt_and_pepper_noise_test:
         for img in images_test:
