@@ -1,6 +1,6 @@
 \section{Materials and Methods}
 
-In medical image analysis, a typical workflow involves executing several sequential algorithmic steps, a process collectively referred to as a pipeline \cite{b8}. The pipeline in this study consists of six steps, namely pre-processing, registration, feature extraction, classification, post-processing and evaluation.
+In medical image analysis, a typical workflow involves executing several sequential algorithmic steps, a process collectively referred to as a pipeline \cite{b8}. The pipeline in this study consists of six steps, namely pre-processing, registration, feature extraction, classification, post-processing and evaluation. We utilized 20 training sets and 10 test sets of T1 and T2 MRI scans, each accompanied by labels and brain masks for skull stripping. Corresponding affine transformations were provided, allowing us to bypass the registration step during Random Forest training.
 
 \subsection{Pre-processing}
 
@@ -25,7 +25,7 @@ Registration is used to align multiple images to a common reference frame. When 
 
 \subsection{Feature Extraction}
 
-Any extractable characteristic or property that describes the underlying medical image and is used in the analysis is coined as a feature. Some examples of image features are intensity, shape, and texture information \cite{b8}. In this study, we focused on extracting features that capture spatial, textural, and statistical properties of the images.
+Any extractable characteristic or property that describes the underlying medical image and is used in the analysis is coined as a feature. Some examples of image features are intensity, shape, and texture information \cite{b8}. In this study, we focused on extracting features that encapsulate spatial, textural, and statistical properties from T1 and T2 MRI images, providing a comprehensive characterization of the data.
 
 Textural features, derived from local intensity distributions, were used to capture patterns and variations within tissue regions. These included metrics such as mean intensity, variance, skewness, and entropy, which are particularly valuable for distinguishing between homogeneous and heterogeneous structures. These features enable the identification of subtle differences in tissue composition. Statistical sampling of voxel intensities provided additional insights by focusing on representative subsets of the data. By generating masks to ensure balanced sampling across different labels, we accounted for variations in tissue representation and minimized the impact of class imbalance. This approach not only improved the quality of the feature set but also enhanced the training process for machine learning models.
 
@@ -42,7 +42,7 @@ The Random Forest was trained on features extracted from the pre-processed image
 
 \subsection{Post-processing}
 
-With the predicted labels obtained, post-processing ensures that these segmentation results are cleaned, polished and improved. Some common examples are smoothing operations and morphological filters to remove noise, refine contours and fill in holes \cite{b11}.
+In this study, post-processing was not applied as it was not necessary to evaluate our hypothesis. The results were directly assessed to determine the segmentation performance, ensuring that the findings reflected the core methodologies without additional modifications.
 
 \# TODO: What did we do to ML results? What did we do to the atlas?
 %Should we maybe just remove this subsection because we dont use any postprocessing?
