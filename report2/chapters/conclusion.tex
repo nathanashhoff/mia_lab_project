@@ -1,1 +1,9 @@
 \section{Conclusion}
+
+This study compared the performance of Atlas-based and Random Forest methods for brain tissue segmentation, focusing on structures like white matter, grey matter, the thalamus, and others. Our findings demonstrate that each method has distinct advantages depending on the target brain regions and computational requirements.
+
+The Random Forest method excelled in segmenting larger structures, such as white and grey matter, leveraging its ability to learn from diverse features capturing intensity, texture, and spatial distribution. Its robustness extended to noisy test data, even when trained solely on clean datasets, showcasing strong generalization capabilities. However, the computational demands of the Random Forest approach make it less suited for real-time applications.
+
+Conversely, the Atlas-based method performed better on smaller, anatomically consistent structures, like the thalamus, where its reliance on registration-based alignment was highly effective. Despite its limitations in handling larger, variable structures, the Atlas-based method demonstrated significant efficiency, completing segmentations in seconds, which is advantageous in clinical settings.
+
+Future work should explore combining these methods to leverage the strengths of each—using the Atlas-based approach for precise segmentation of small, consistent regions and Random Forest for larger, heterogeneous structures. Additionally, expanding datasets to capture greater anatomical variability and developing tailored atlases for diverse populations could improve the generalizability and accuracy of segmentation across clinical applications. This hybrid and adaptable approach could enhance automated brain segmentation's effectiveness, addressing the challenges identified in this study.
