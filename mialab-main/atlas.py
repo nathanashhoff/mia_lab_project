@@ -352,7 +352,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     ATLAS_PATH = "mia_lab_project/data/atlas/mni_icbm152_t1_tal_nlin_sym_09a.nii.gz"
     PROJECT_PATH = "mia_lab_project/mialab-main/atlas_images"
     path_to_atlas = os.path.join(BASE_DIR, ATLAS_PATH)
-    create_atlas = False
+    create_atlas = True
     num_of_atlases = 1
     if create_atlas:
 

@@ -1,0 +1,11 @@
+LABEL;METRIC;STATISTIC;VALUE
+Amygdala;DICE;MEAN;0.47
+Amygdala;DICE;STD;0.06
+GreyMatter;DICE;MEAN;0.74
+GreyMatter;DICE;STD;0.01
+Hippocampus;DICE;MEAN;0.44
+Hippocampus;DICE;STD;0.06
+Thalamus;DICE;MEAN;0.68
+Thalamus;DICE;STD;0.11
+WhiteMatter;DICE;MEAN;0.83
+WhiteMatter;DICE;STD;0.02
