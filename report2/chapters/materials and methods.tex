@@ -35,9 +35,9 @@ The combination of these features ensured a robust and multidimensional characte
 
 Classification is the core of the automated segmentation process, where the chosen machine learning algorithm determines the label for each voxel in the image \cite{b8}. In this study, a Random Forest classifier was utilized due to its robustness in handling high-dimensional data and its resistance to overfitting.
 
-To optimize the classifier’s performance, a grid search was conducted to determine the best hyperparameters for both standard and noisy datasets (with added salt-and-pepper noise). Interestingly, the same optimal hyperparameters were identified for both conditions, indicating the classifier’s adaptability to different data qualities. The model achieved the best results with 700 decision trees (\texttt{n\_estimators}), a maximum tree depth of 45 (\texttt{max\_depth}), and a square root selection of features at each split (\texttt{max\_features = sqrt}).
+To optimize the classifier’s performance, a grid search was conducted to determine the best hyperparameters for both standard and noisy datasets (with added salt-and-pepper noise). Interestingly, the same optimal hyperparameters were identified for both conditions, indicating the classifier’s adaptability to different data qualities. The model achieved the best results with 700 decision trees, a maximum tree depth of 45, and a square root selection of features at each split.
 
-The Random Forest was trained on features extracted from the pre-processed images, and its predictions on test data provided voxel-level probabilities for each label. These outputs formed the basis for subsequent post-processing and evaluation steps, ensuring accurate and reliable segmentation results across varying data conditions.
+The Random Forest was trained on features extracted from the pre-processed images, and its predictions on test data provided voxel-level probabilities for each label. These outputs formed the basis for the subsequent evaluation step.
 
 
 \subsection{Post-processing}
