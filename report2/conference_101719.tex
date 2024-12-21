@@ -19,6 +19,9 @@
 \IEEEoverridecommandlockouts
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
 \usepackage{cite}
+\renewcommand\citepunct{,}
+\usepackage{float}
+\usepackage{comment}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
@@ -36,6 +39,7 @@
 \thanks{All authors declare that they have no conflicts of interest.}
 }
 
+\begin{comment}
 \author{\IEEEauthorblockN{Antoine Biebuyck}
 \IEEEauthorblockA{\textit{ARTORG Center for BME Research} \\
 \textit{Université de Berne}\\
@@ -54,15 +58,22 @@ nathan.hoffman@students.unibe.ch}
 Berna, Svizzera \\
 sandro.scherrer@students.unibe.ch}
 }
+\end{comment}
+
+\author{
+	\IEEEauthorblockN{Antoine Biebuyck\textsuperscript{1}, Nathan Hoffman\textsuperscript{1}, Sandro Scherrer\textsuperscript{1}}
+	\IEEEauthorblockA{\textsuperscript{1}ARTORG Center for Biomedical Engineering Research, University of Bern, Bern, Switzerland \\
+		Emails: antoine.biebuyck@students.unibe.ch, nathan.hoffman@students.unibe.ch, sandro.scherrer@students.unibe.ch}
+}
 
 \maketitle
 
 \begin{abstract}
-This document is a model and instructions for \LaTeX.
+Alzheimer's disease is on the rise and presents a threat to our aging populations. Reliable biomarkers are required to permit early detection and comprehensive monitoring. One such class of biomarkers arise from volumetric and structural information obtained from magnetic resonance imaging sequences. However, such characterizations rely on precise segmentation which, when performed manually, is too resource-heavy to become adopted in routine clinical workflows. Therefore, automatic segmentation processes are essential to investigate. In this study, we are interested in comparing the performance of an atlas-based method to a machine learning Random Forest model, to evaluate whether the former can match or outperform the latter. Our findings suggest that it depends, in that, the atlas-based method performed better on the smaller brain structures whereas the Random Forest model performed better on the larger brain structures.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Alzheimer's disease, Magnetic resonance imaging, Image segmentation, Machine learning
+Alzheimer's disease, Magnetic resonance imaging, Image segmentation, Machine learning, Atlas
 \end{IEEEkeywords}
 
 \input{chapters/introduction}
@@ -72,5 +83,14 @@ Alzheimer's disease, Magnetic resonance imaging, Image segmentation, Machine lea
 \input{chapters/conclusion}
 \input{chapters/acknowledgment}
 \input{chapters/references}
+
+% Start of annex/appendices
+%\clearpage
+%\newpage
+%\onecolumn % Switch to single-column mode
+%\appendix
+%\section{Appendix}
+%\input{chapters/annexe}
+
 
 \end{document}
